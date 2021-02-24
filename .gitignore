@@ -1,0 +1,6 @@
+.idea/
+.git/
+__pycache__/
+plots/
+q-learning/
+*.npy
