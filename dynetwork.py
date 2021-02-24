@@ -5,11 +5,16 @@ import Packet
 import copy
 
 ''' 
-    Class created to store network and network attributes as well as generate packets 
+    Class created to store network and network attributes as well as generate packets
     File contains functions:
-        randomGeneratePackets: initialize packets to network in the beginning 
-        GeneratePacket: generate additional packets as previous packets are delivered to keep network working in specified load
+        randomGeneratePackets: initialize packets to network in the beginning, assign predefined number of packet to 
+        send in the network.
+        GeneratePacket: generate additional packets as previous packets are delivered to keep network working in 
+        specified load, randomly choose a start node if it has the capacity to send packet, randomly choose a 
+        destination.
 '''
+# Do not understand parameter 'wait'
+
 
 class DynamicNetwork(object):
     def __init__(self, network, max_initializations=1000, packets=None, rejections=0, deliveries=0,):
