@@ -50,7 +50,7 @@ class QAgent(object):
                         q_table[(currpos, dest)][action] = 10  # Why set 10 if current node is destination?
         return q_table
 
-    '''Returns best action for a given state. '''
+    '''Returns best action for a given state, action is the next step node number. '''
     def act(self, state, neighbor):
         ''' We will either random explore or refer to Q-table with probability epsilon '''
         if random.uniform(0, 1) < self.config['epsilon']:

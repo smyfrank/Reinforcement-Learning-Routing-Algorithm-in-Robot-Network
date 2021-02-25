@@ -23,6 +23,7 @@ def Restore(dyNetwork):
     dyNetwork._network.add_edges_from(restore)
     
 ''' Randomly change edge weights '''
+# edge weight is actually edge delay
 def Random_Walk(dyNetwork):
     for s_edge, e_edge in dyNetwork._network.edges():
         try:
@@ -32,6 +33,7 @@ def Random_Walk(dyNetwork):
             print(s_edge, e_edge)
             
 ''' Change edge weights so that the edge weight changes will be roughly sinusoidal across the simulation '''
+# Why sine_state step is pi/6? Maybe it is just a super parameter.
 def Sinusoidal(dyNetwork):
     for s_edge, e_edge in dyNetwork._network.edges():
         dyNetwork._network[s_edge][e_edge]['edge_delay'] = max(1, int(dyNetwork._network[s_edge][e_edge]['initial_weight']* (1 + 0.5 * math.sin(dyNetwork._network[s_edge][e_edge]['sine_state']))))
