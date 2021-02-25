@@ -5,6 +5,7 @@ import networkx as nx
 
 '''
     The agent file defines a learning agent and its hyperparameters
+    Q-table is a independent data structure which is not stored in each node.
     File contains functions:
         generate_q_table: initialize Q-table
         act: returns which next node to send packet to
@@ -31,7 +32,8 @@ class QAgent(object):
             }
         self.q = self.generate_q_table(dynetwork._network)
 
-    ''' Use this function to set up the q-table'''
+    ''' Use this function to initialize the q-table, the q-table is stable since the network is not mobile'''
+    # TODO: q-table must be generated that can be adjust to mobile network.
     def generate_q_table(self, network):
         q_table = {}
         num_nodes = len(network)
@@ -45,20 +47,20 @@ class QAgent(object):
                         q_table[(currpos, dest)][action] = 0
                         ''' Initialize using Shortest Path'''
                     else:
-                        q_table[(currpos, dest)][action] = 10
+                        q_table[(currpos, dest)][action] = 10  # Why set 10 if current node is destination?
         return q_table
 
     '''Returns best action for a given state. '''
     def act(self, state, neighbor):
-        ''' We will either random walk or reference Q-table with probability epsilon ''' 
+        ''' We will either random explore or refer to Q-table with probability epsilon '''
         if random.uniform(0, 1) < self.config['epsilon']:
             """ checks if the packet's current node has any available neighbors """
-            if not bool(neighbor):
+            if not bool(neighbor):  # In python, blank {}, [], () are all False
                 return None
             else:
                 next_step = random.choice(neighbor)  # Explore action space
         else:
-            temp_neighbor_dict = {n: self.q[state][n] for n in self.q[state] if n in neighbor}
+            temp_neighbor_dict = {n: self.q[state][n] for n in self.q[state] if n in neighbor}  # { expression for x in X [if condition] for y in Y [if condition]...}
             """ checks if the packet's current node has any available neighbors """
             if not bool(temp_neighbor_dict):
                 return None
