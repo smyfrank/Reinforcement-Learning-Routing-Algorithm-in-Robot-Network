@@ -184,7 +184,7 @@ class dynetworkEnv(gym.Env):
         for nodeIdx in self.dynetwork._network.nodes:
             node = self.dynetwork._network.nodes[nodeIdx]
             if not sp:
-                node['growth'] = len(node[receiving_queue])
+                node['growth'] = len(node[receiving_queue])  # What does growth mean?
             queue = copy.deepcopy(node[receiving_queue])
             for elt in queue:
                 '''increment packet delivery time step'''
