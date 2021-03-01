@@ -25,15 +25,15 @@ from random import randint
     
     change_network: edge deletion/re-establish, edge weight change
     purgatory: queue to generate additional queues as previous packets are delivered
-    step: obtain rewards for updating Q-table after an action
+    step: obtain rewards for updating Q-table after an action ***
     is_capacity: check if next node is full and unable to receive packets
     send_packet: attempt to send packet to next node
     reset: reset environment after each episode
     resetForTest: reset environment for each trial (test for different network loads)
     get_state: obtain packet's position info
     update_queues: update each nodes packet holding queue
-    update_time: update packet delivery time
-    calc_avg_delivery: helper function to calculate delivery time
+    update_time: update packet delivery time ***
+    calc_avg_delivery: helper function to calculate delivery time ***
     router: used to route all packets in ONE time stamp
     updateWhole: helper function update network environment and packets status
     """
@@ -73,7 +73,7 @@ class dynetworkEnv(gym.Env):
         self.preds = None 
 
         '''Initialize a dynetwork object using Networkx and dynetwork.py'''
-        
+        # TODO: /param nedges Number of edges to attach from a new node to existing nodes
         if self.network_type == 'barabasi-albert':
             network = nx.barabasi_albert_graph(self.nnodes, self.nedges)
         else:
@@ -81,23 +81,23 @@ class dynetworkEnv(gym.Env):
 
         '''node attributes'''
         nx.set_node_attributes(network, copy.deepcopy(self.max_transmit), 'max_send_capacity')
-        nx.set_node_attributes(network, copy.deepcopy(self.max_queue),'max_receive_capacity')
+        nx.set_node_attributes(network, copy.deepcopy(self.max_queue), 'max_receive_capacity')
 
-        '''Q-Learning specific'''
+        '''Q-Learning specific, set attributes'''
         receiving_queue_dict, sending_queue_dict = {}, {}
         for i in range(self.nnodes):
             temp = {'receiving_queue': []}
             temp2 = {'sending_queue': []}
-            receiving_queue_dict.update({i: temp})
+            receiving_queue_dict.update({i: temp})  # update or add
             sending_queue_dict.update({i: temp2})
         del temp, temp2
-        nx.set_node_attributes(network, receiving_queue_dict)
+        nx.set_node_attributes(network, receiving_queue_dict)  # Set attributes keyed by node number
         nx.set_node_attributes(network, sending_queue_dict)
-        nx.set_node_attributes(network, 0, 'max_queue_len')
+        nx.set_node_attributes(network, 0, 'max_queue_len')  # Set attributes as the same in all nodes
         nx.set_node_attributes(network, 0, 'avg_q_len_array')
         nx.set_node_attributes(network, 0, 'growth')
         
-        '''Shortest Path specific'''
+        '''Shortest Path specific, set attributes'''
         sp_receiving_queue_dict, sp_sending_queue_dict = {}, {}
         for i in range(self.nnodes):
             temp = {'sp_receiving_queue': []}
@@ -122,8 +122,8 @@ class dynetworkEnv(gym.Env):
         self.initial_dynetwork = dynetwork.DynamicNetwork(copy.deepcopy(network), self.max_initializations)
         
         '''Saves the graph into .gexf file'''
-        script_dir = os.path.dirname(__file__)
-        results_dir = os.path.join(script_dir, 'q-learning/')
+        script_dir = os.path.dirname(__file__)  # Return the dir of this script
+        results_dir = os.path.join(script_dir, 'q-learning/')  # Join several path
         if not os.path.isdir(results_dir):
             os.makedirs(results_dir)
         nx.write_gexf(network, results_dir + "graph.gexf")
@@ -131,7 +131,7 @@ class dynetworkEnv(gym.Env):
         self.dynetwork = copy.deepcopy(self.initial_dynetwork)
         '''use dynetwork class method randomGeneratePackets to populate the network with packets'''
         self.dynetwork.randomGeneratePackets(copy.deepcopy(self.npackets), False)
-        self._positions = nx.spring_layout(self.dynetwork._network)
+        self._positions = nx.spring_layout(self.dynetwork._network)  # Position nodes, return a dictionary of positions keyed by node.
 
     '''helper function to update learning environment in each time stamp''' 
     def updateWhole(self, agent, learn = True, q=True, sp = False, rewardfun='reward5', savesteps=False):
@@ -170,7 +170,7 @@ class dynetworkEnv(gym.Env):
             temp_purgatory = copy.deepcopy(self.dynetwork._purgatory)
             self.dynetwork._purgatory = []
         for (index, weight) in temp_purgatory:
-            self.dynetwork.GeneratePacket(index, sp, weight)
+            self.dynetwork.GeneratePacket(index, sp, weight)  # weight = wait?
             
     '''Takes packets which are now ready to be sent and puts them in the sending queue of the node '''
     def update_queues(self, sp=False):
@@ -189,14 +189,14 @@ class dynetworkEnv(gym.Env):
             for elt in queue:
                 '''increment packet delivery time step'''
                 pkt = elt[0]
-                if elt[1] == 0:
+                if elt[1] == 0:  # elt[1]==0 means this packet is ready to be sent, take the pkt to sending queue from receiving queue
                     node[sending_queue].append(pkt)
                     node[receiving_queue].remove(elt)
-                else:
+                else:  # If pkt is not ready to be sent, update the corresponding item in the receiving queue.
                     idx = node[receiving_queue].index(elt)
                     node[receiving_queue][idx] = (pkt, elt[1] - 1)
 
-    ''' Update time spent in queues for each packets '''
+    ''' Update time spent in queues for each packets, for every packet in receiving and sending queue, plus one time step '''
     def update_time(self, sp=False):
         if sp:
             sending_queue = 'sp_sending_queue'
