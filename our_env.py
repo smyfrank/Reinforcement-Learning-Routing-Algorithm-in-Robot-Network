@@ -225,7 +225,7 @@ class dynetworkEnv(gym.Env):
         pkt = self.dynetwork._packets.packetList[self.packet]
         return (pkt.get_curPos(), pkt.get_endPos())
 
-    '''loop sending queue in the loop of all nodes, record some congestion measure'''
+    '''loop sending queue in the loop of all nodes, record some congestion measures'''
     def router(self, agent, will_learn = True, rewardfun='reward5', savesteps=False):
         node_queue_lengths = [0]
         num_nodes_at_capacity = 0
