@@ -305,6 +305,7 @@ class dynetworkEnv(gym.Env):
 
     ''' 
     Given next_step, send packet to next_step.
+    add edge delay to packet time.
     Check if the node is full/other considerations beforehand. 
     '''
     def send_packet(self, next_step, rewardfun='reward5', savesteps=False):
@@ -321,9 +322,9 @@ class dynetworkEnv(gym.Env):
             """ if packet has reached destination, a new packet is created with the same 'ID' (packet index) but a new destination, which is then redistributed to another node """
             self.dynetwork._delivery_times.append(self.dynetwork._packets.packetList[self.packet].get_time())
             self.dynetwork._deliveries += 1
-            self.dynetwork.GeneratePacket(self.packet, False, random.randint(0, 5))
+            self.dynetwork.GeneratePacket(self.packet, False, random.randint(0, 5))  # the use of wait
             self.curr_queue.remove(self.packet)
-            reward = 20*self.nnodes
+            reward = 20*self.nnodes  # TODO: reward of the termination
         else:
             self.curr_queue.remove(self.packet)
             try:
@@ -343,7 +344,7 @@ class dynetworkEnv(gym.Env):
                     reward = self.reward7(next_step)
             except nx.NetworkXNoPath:
                 """ if the node the packet was just sent to has no available path to dest_node, we assign a reward of -50 """
-                reward = -50
+                reward = -50  # TODO: reward of void area/dead end
             self.dynetwork._network.nodes[next_step]['receiving_queue'].append(
                 (self.packet, weight))
         return reward

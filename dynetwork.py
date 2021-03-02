@@ -27,10 +27,10 @@ class DynamicNetwork(object):
         '''q_learning attributes'''
         self._packets = packets
         self._rejections = rejections
-        self._deliveries = deliveries
+        self._deliveries = deliveries  # record the number of packets that are successfully delivered
         self.delayed_queue = []
         self._stripped_list = []
-        self._delivery_times = []
+        self._delivery_times = []  # record delivery time of all packets
         self._initializations = 0
         self._max_queue_length = 0
         self._purgatory = []        
