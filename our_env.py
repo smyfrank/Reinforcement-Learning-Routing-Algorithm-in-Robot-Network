@@ -224,7 +224,8 @@ class dynetworkEnv(gym.Env):
     def get_state(self, pktIdx):
         pkt = self.dynetwork._packets.packetList[self.packet]
         return (pkt.get_curPos(), pkt.get_endPos())
-        
+
+    '''loop sending queue in the loop of all nodes, record some congestion measure'''
     def router(self, agent, will_learn = True, rewardfun='reward5', savesteps=False):
         node_queue_lengths = [0]
         num_nodes_at_capacity = 0
@@ -249,15 +250,17 @@ class dynetworkEnv(gym.Env):
             '''Congestion Measure #2: avg queue len pt1'''
             if(queue_size > 0):
                 node_queue_lengths.append(queue_size)
-                num_nonEmpty_nodes += 1
+                num_nonEmpty_nodes += 1  # Node whose queue is not empty
                 ''' Congestion Measure #3: avg percent at capacity'''
                 if(queue_size > sending_capacity):
                     '''increment number of nodes that are at capacity'''
-                    num_nodes_at_capacity += 1
+                    num_nodes_at_capacity += 1  # full load node
 
             '''stores packets which currently have no destination path'''
             self.remaining = []
-            sendctr = 0
+            sendctr = 0  # count the number of packets sent out
+
+            '''loop the sending queue of current node'''
             for i in range(queue_size):
                 '''when node cannot send anymore packets break and move to next node'''
                 if sendctr == sending_capacity:
@@ -265,7 +268,7 @@ class dynetworkEnv(gym.Env):
                     break
                 self.packet = self.curr_queue[0]
                 pkt_state = self.get_state(copy.deepcopy(self.packet))
-                nlist = list(self.dynetwork._network.neighbors(pkt_state[0]))
+                nlist = list(self.dynetwork._network.neighbors(pkt_state[0]))  # neighbors(G,n) returns a list of nodes connected to node n.
                 action = agent.act(pkt_state, nlist)
                 reward, self.remaining, self.curr_queue, action = self.step(action, pkt_state[0], rewardfun, savesteps)
                 if reward != None:
