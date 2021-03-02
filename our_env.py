@@ -60,9 +60,9 @@ class dynetworkEnv(gym.Env):
 
         '''For Q-Learning'''
         '''current packet, i.e. first item in the dynetwork's packet list'''
-        self.packet = -1 
-        self.curr_queue = []
-        self.remaining = []
+        self.packet = -1  # indicate the packet that is being processed
+        self.curr_queue = []  # indicate a queue that is being processed
+        self.remaining = []  # indicate a queue containing packets that send forward unsuccessfully
         self.nodes_traversed = 0
 
         '''For Shortest Path'''
@@ -257,8 +257,9 @@ class dynetworkEnv(gym.Env):
                     num_nodes_at_capacity += 1  # full load node
 
             '''stores packets which currently have no destination path'''
+            # store packets which cannot be send to neighbor, reset the list for each node of the loop
             self.remaining = []
-            sendctr = 0  # count the number of packets sent out
+            sendctr = 0  # count the number of packets which brings reward
 
             '''loop the sending queue of current node'''
             for i in range(queue_size):
@@ -294,8 +295,8 @@ class dynetworkEnv(gym.Env):
         """ checks if action is None, in which case current node has no neighbors and also checks to see if target node has space in queue """
         
         if (action == None) or (self.is_capacity(action, False)):
-            self.curr_queue.remove(self.packet)
-            self.remaining.append(self.packet)
+            self.curr_queue.remove(self.packet)  # sending queue remove the packet
+            self.remaining.append(self.packet)  # still remain the packet
             self.dynetwork._rejections += 1
         else:
             reward = self.send_packet(action, rewardfun, savesteps)
