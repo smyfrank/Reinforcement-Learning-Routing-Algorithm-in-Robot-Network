@@ -390,7 +390,7 @@ class dynetworkEnv(gym.Env):
         q = len(self.dynetwork._network.nodes[next_step]['sending_queue']) + len(self.dynetwork._network.nodes[next_step]['receiving_queue'])
         q_eq = 0.8*self.max_queue
         w = 5
-        growth = self.dynetwork._network.nodes[next_step]['growth']
+        growth = self.dynetwork._network.nodes[next_step]['growth']  # What is 'growth'?
         return(-(q-q_eq+w*growth))
 
     '''Function that penalizes for exceeing equilibrium queue size, as well as growth rate of the queue'''
@@ -414,7 +414,7 @@ class dynetworkEnv(gym.Env):
     def sp_router(self, router_type='dijkstra', weight='delay', savesteps=False):
         if str.lower(router_type) != 'dijkstra':
             if weight == 'delay':
-                self.preds, _ = nx.floyd_warshall_predecessor_and_distance(self.dynetwork._network, weight='edge_delay')
+                self.preds, _ = nx.floyd_warshall_predecessor_and_distance(self.dynetwork._network, weight='edge_delay')  # Find shortest path between any two nodes by floyd algorithm
             else:
                 self.preds, _ = nx.floyd_warshall_predecessor_and_distance(self.dynetwork._network)
         temp_node_queue_lens = [0]
