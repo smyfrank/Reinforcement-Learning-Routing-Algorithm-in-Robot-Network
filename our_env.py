@@ -586,13 +586,13 @@ class dynetworkEnv(gym.Env):
             q_current_node = q_first_packet.get_startPos()
             sp_current_node = sp_first_packet.get_startPos()
             destination = q_first_packet.get_endPos()
-            q_nodes = []
+            q_nodes = []  # record queue length of every node in every step
             s_nodes = []
-            edges = []
+            edges = []  # record edges of every step
             edge_labels = []
-            q_traversed = []
+            q_traversed = []  # record packet traversed edges
             s_traversed = []
-            q_current = [q_current_node]
+            q_current = [q_current_node]  # record packet traversed nodes
             s_current = [sp_current_node]
             
             '''keep on routing until both Q-learning and SP finish'''
@@ -623,7 +623,7 @@ class dynetworkEnv(gym.Env):
                         path.append((b,a))
                     else:
                         path.append((a,b))
-                q_traversed.append([x for x in list(path) if x in e])
+                q_traversed.append([x for x in list(path) if x in e])  # if x is a current edge and is one path of the packet
                 temp1 = zip(sp_first_packet._steps, sp_first_packet._steps[1:])
                 path1 = []
                 for (a,b) in temp1:
