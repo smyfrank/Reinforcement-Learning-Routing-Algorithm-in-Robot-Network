@@ -4,3 +4,4 @@ __pycache__/
 plots/
 q-learning/
 *.npy
+rewardplots/
