@@ -47,7 +47,8 @@ avg_perc_at_capacity_learning = []
 rejectionNums_learning = []
 avg_perc_empty_nodes_learning=[]
 
-
+# In each episode, update the network for time_steps times. In each time step, update the whole network, which means
+# 1.update edges 2.generate packet 3.update queue 4. update packet time in queue 5.route all nodes.
 '''----------------------LEARNING PROCESS--------------------------'''
 for i_episode in range(numEpisode):
     print("---------- Episode:", i_episode+1," ----------")
