@@ -4,6 +4,10 @@ import math
 
 ''' Functions to handle edges in our network. '''
 
+'''Move the nodes'''
+def MoveNodes(dyNetwork, maxSpeed, moveWay):
+    nodes = dyNetwork._network.nodes()
+
 ''' Randomly deletes some number of edges between min_edge_removal and max_edge_removal '''
 def Delete(dyNetwork, min_edge_removal, max_edge_removal):
     edges = dyNetwork._network.edges()

@@ -52,7 +52,7 @@ class dynetworkEnv(gym.Env):
         self.max_edge_weight = 10
         self.min_edge_removal = 0
         self.max_edge_removal = 10
-        self.edge_change_type = 'sinusoidal'
+        self.edge_change_type = 'sinusoidal'  # TODO: mobile node change edges
         self.network_type = 'geometric_graph'  # TODO: use: random_geometric_graph(n, radius, dim=2, pos=None, p=2, seed=None)
         self.router_type = 'dijkstra'
         self.initial_dynetwork = None
