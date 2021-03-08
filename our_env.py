@@ -43,7 +43,8 @@ class dynetworkEnv(gym.Env):
     '''Initialization of the network'''
     def __init__(self):
         self.nnodes = 50
-        self.nedges = 3
+        self.radius = 20  # The antenna communication range
+        self.nedges = 3  # ABANDON Number of edges to attach from a new node to existing nodes
         self.max_queue = 150
         self.max_transmit = 10
         self.npackets = 5000
@@ -52,7 +53,7 @@ class dynetworkEnv(gym.Env):
         self.min_edge_removal = 0
         self.max_edge_removal = 10
         self.edge_change_type = 'sinusoidal'
-        self.network_type = 'barabasi-albert'
+        self.network_type = 'geometric_graph'  # TODO: use: random_geometric_graph(n, radius, dim=2, pos=None, p=2, seed=None)
         self.router_type = 'dijkstra'
         self.initial_dynetwork = None
         self.dynetwork = None
@@ -73,9 +74,9 @@ class dynetworkEnv(gym.Env):
         self.preds = None 
 
         '''Initialize a dynetwork object using Networkx and dynetwork.py'''
-        # TODO: /param nedges Number of edges to attach from a new node to existing nodes
-        if self.network_type == 'barabasi-albert':
-            network = nx.barabasi_albert_graph(self.nnodes, self.nedges)
+        # TODO: use random_geometric_graph(n, radius, dim=2, pos=None, p=2, seed=None)
+        if self.network_type == 'geometric_graph':
+            network = nx.random_geometric_graph(self.nnodes, self.radius)
         else:
            network = nx.gnm_random_graph(self.nnodes, self.nedges)
 
