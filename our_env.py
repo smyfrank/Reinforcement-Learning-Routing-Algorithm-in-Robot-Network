@@ -43,7 +43,7 @@ class dynetworkEnv(gym.Env):
     '''Initialization of the network'''
     def __init__(self):
         self.nnodes = 50
-        self.radius = 20  # The antenna communication range
+        self.radius = 0.2  # The antenna communication range, the whole map size is 1*1
         self.nedges = 3  # ABANDON Number of edges to attach from a new node to existing nodes
         self.max_queue = 150
         self.max_transmit = 10
@@ -127,7 +127,13 @@ class dynetworkEnv(gym.Env):
         results_dir = os.path.join(script_dir, 'q-learning/')  # Join several path
         if not os.path.isdir(results_dir):
             os.makedirs(results_dir)
-        nx.write_gexf(network, results_dir + "graph.gexf")
+
+        # TODO: write_gexf of geometric graph
+        # nx.write_gexf(network, results_dir + "graph.gexf")
+        for nodeIndex in network.nodes:
+            node=network.nodes[nodeIndex]
+            print("Node "+ str(nodeIndex) + "'s position is "+ str(node['pos']))
+
         
         self.dynetwork = copy.deepcopy(self.initial_dynetwork)
         '''use dynetwork class method randomGeneratePackets to populate the network with packets'''
@@ -136,7 +142,8 @@ class dynetworkEnv(gym.Env):
 
     '''helper function to update learning environment in each time stamp''' 
     def updateWhole(self, agent, learn = True, q=True, sp = False, rewardfun='reward5', savesteps=False):
-        self.change_network()
+
+        # self.change_network()
         
         if q:
             self.purgatory(False)
