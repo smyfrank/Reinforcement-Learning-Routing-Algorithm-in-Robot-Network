@@ -45,6 +45,8 @@ class dynetworkEnv(gym.Env):
         self.nnodes = 50
         self.radius = 0.2  # The antenna communication range, the whole map size is 1*1
         self.nedges = 3  # ABANDON Number of edges to attach from a new node to existing nodes
+        self.minSpeed = 0.002
+        self.maxSpeed = 0.005   # define the min and max speed of node
         self.max_queue = 150
         self.max_transmit = 10
         self.npackets = 5000
@@ -131,18 +133,20 @@ class dynetworkEnv(gym.Env):
         # TODO: write_gexf of geometric graph
         # nx.write_gexf(network, results_dir + "graph.gexf")
         for nodeIndex in network.nodes:
-            node=network.nodes[nodeIndex]
-            print("Node "+ str(nodeIndex) + "'s position is "+ str(node['pos']))
+            node = network.nodes[nodeIndex]
+            print("Node " + str(nodeIndex) + "'s position is " + str(node['pos']))
 
-        
         self.dynetwork = copy.deepcopy(self.initial_dynetwork)
         '''use dynetwork class method randomGeneratePackets to populate the network with packets'''
         self.dynetwork.randomGeneratePackets(copy.deepcopy(self.npackets), False)
+
+        # TODO: positions to plot nodes
         self._positions = nx.spring_layout(self.dynetwork._network)  # Position nodes, return a dictionary of positions keyed by node.
 
     '''helper function to update learning environment in each time stamp''' 
     def updateWhole(self, agent, learn = True, q=True, sp = False, rewardfun='reward5', savesteps=False):
 
+        # TODO: change network
         # self.change_network()
         
         if q:
