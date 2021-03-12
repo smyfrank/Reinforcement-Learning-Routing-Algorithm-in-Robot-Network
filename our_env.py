@@ -2,6 +2,7 @@ import dynetwork
 import Packet
 import UpdateEdges as UE
 from our_agent import QAgent
+import Mobility
 
 import gym
 from gym import error
@@ -42,11 +43,14 @@ class dynetworkEnv(gym.Env):
     
     '''Initialization of the network'''
     def __init__(self):
-        self.nnodes = 50
+        self.nnodes = 50    # The node queue will be full if there are too few nodes, when generate packet
         self.radius = 0.2  # The antenna communication range, the whole map size is 1*1
         self.nedges = 3  # ABANDON Number of edges to attach from a new node to existing nodes
         self.minSpeed = 0.002
         self.maxSpeed = 0.005   # define the min and max speed of node
+        self.mobility_model = 'random_waypoint'
+        self.mb = None
+
         self.max_queue = 150
         self.max_transmit = 10
         self.npackets = 5000
@@ -73,12 +77,20 @@ class dynetworkEnv(gym.Env):
         self.sp_curr_queue = []
         self.sp_remaining = []
         self.sp_nodes_traversed = 0
-        self.preds = None 
+        self.preds = None
+
+        # TODO: Initiate mobility model here
+        self.mb = Mobility.Mobility(self.mobility_model, self.nnodes, self.minSpeed, self.maxSpeed)
+        init_pos = self.mb.get_next_way_point()  # get a list of node position, no keys
+        init_node_pos = {}
+        for i in range(self.nnodes):    # index the init node position
+            init_node_pos[i] = init_pos[i]
+        print(init_node_pos)
 
         '''Initialize a dynetwork object using Networkx and dynetwork.py'''
         # TODO: use random_geometric_graph(n, radius, dim=2, pos=None, p=2, seed=None)
         if self.network_type == 'geometric_graph':
-            network = nx.random_geometric_graph(self.nnodes, self.radius)
+            network = nx.random_geometric_graph(self.nnodes, self.radius, pos=init_node_pos)
         else:
            network = nx.gnm_random_graph(self.nnodes, self.nedges)
 
@@ -123,7 +135,7 @@ class dynetworkEnv(gym.Env):
 
         '''make a copy so that we can preserve the initial state of the network'''
         self.initial_dynetwork = dynetwork.DynamicNetwork(copy.deepcopy(network), self.max_initializations)
-        
+
         '''Saves the graph into .gexf file'''
         script_dir = os.path.dirname(__file__)  # Return the dir of this script
         results_dir = os.path.join(script_dir, 'q-learning/')  # Join several path
@@ -134,7 +146,7 @@ class dynetworkEnv(gym.Env):
         # nx.write_gexf(network, results_dir + "graph.gexf")
         for nodeIndex in network.nodes:
             node = network.nodes[nodeIndex]
-            print("Node " + str(nodeIndex) + "'s position is " + str(node['pos']))
+            print("Node " + str(nodeIndex) + "'s init position is " + str(node['pos']))
 
         self.dynetwork = copy.deepcopy(self.initial_dynetwork)
         '''use dynetwork class method randomGeneratePackets to populate the network with packets'''
