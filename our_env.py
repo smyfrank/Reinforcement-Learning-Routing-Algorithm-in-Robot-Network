@@ -84,7 +84,8 @@ class dynetworkEnv(gym.Env):
         init_pos = self.mb.get_next_way_point()  # get a list of node position, no keys
         init_node_pos = {}
         for i in range(self.nnodes):    # index the init node position
-            init_node_pos[i] = init_pos[i]
+            init_node_pos[i] = init_pos[i].copy()  # deep copy the list of list
+        print("Initial node positions are:")
         print(init_node_pos)
 
         '''Initialize a dynetwork object using Networkx and dynetwork.py'''
