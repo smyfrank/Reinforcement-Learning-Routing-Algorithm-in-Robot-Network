@@ -4,10 +4,6 @@ import math
 
 ''' Functions to handle edges in our network. '''
 
-'''Move the nodes'''
-def MoveNodes(dyNetwork, maxSpeed, moveWay):
-    nodes = dyNetwork._network.nodes()
-
 ''' Randomly deletes some number of edges between min_edge_removal and max_edge_removal '''
 def Delete(dyNetwork, min_edge_removal, max_edge_removal):
     edges = dyNetwork._network.edges()
@@ -51,3 +47,5 @@ def Average(dyNetwork):
         avg = np.avg([tot_queue1, tot_queue2])
         dyNetwork._network[node1][node2]['edge_delay'] = avg
         del tot_queue1, tot_queue2
+
+''' Judge whether two nodes are in connection depending on the positions and communication range'''
