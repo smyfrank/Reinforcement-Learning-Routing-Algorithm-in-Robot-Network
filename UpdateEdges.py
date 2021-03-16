@@ -55,8 +55,8 @@ def Average(dyNetwork):
 
 ''' Judge whether two nodes are in connection depending on the positions and communication radius'''
 def calculate_nodes_connection(dyNetwork, radius):
-    for i in range(dyNetwork.nnodes):
-        for j in range(i, dyNetwork.nnodes):
+    for i in range(dyNetwork._network.number_of_nodes()):
+        for j in range(i, dyNetwork._network.number_of_nodes()):
             if i != j:
                 pos1 = dyNetwork._network.nodes[i]['pos']
                 pos2 = dyNetwork._network.nodes[j]['pos']
