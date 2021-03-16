@@ -81,17 +81,12 @@ class dynetworkEnv(gym.Env):
 
         # TODO: Initiate mobility model here
         self.mb = Mobility.Mobility(self.mobility_model, self.nnodes, self.minSpeed, self.maxSpeed)
-        init_pos = self.mb.get_next_way_point()  # get a list of node position, no keys
-        init_node_pos = {}
-        for i in range(self.nnodes):    # index the init node position
-            init_node_pos[i] = init_pos[i].copy()  # deep copy the list of list
-        print("Initial node positions are:")
-        print(init_node_pos)
+        init_pos = self.mb.get_next_way_point()  # get a dict of node position
 
         '''Initialize a dynetwork object using Networkx and dynetwork.py'''
         # TODO: use random_geometric_graph(n, radius, dim=2, pos=None, p=2, seed=None)
         if self.network_type == 'geometric_graph':
-            network = nx.random_geometric_graph(self.nnodes, self.radius, pos=init_node_pos)
+            network = nx.random_geometric_graph(self.nnodes, self.radius, pos=init_pos)
         else:
            network = nx.gnm_random_graph(self.nnodes, self.nedges)
 
@@ -154,7 +149,8 @@ class dynetworkEnv(gym.Env):
         self.dynetwork.randomGeneratePackets(copy.deepcopy(self.npackets), False)
 
         # TODO: positions to plot nodes
-        self._positions = nx.spring_layout(self.dynetwork._network)  # Position nodes, return a dictionary of positions keyed by node.
+        # self._positions = nx.spring_layout(self.dynetwork._network)  # Position nodes, return a dictionary of positions keyed by node.
+        self._positions = init_pos
 
     '''helper function to update learning environment in each time stamp''' 
     def updateWhole(self, agent, learn = True, q=True, sp = False, rewardfun='reward5', savesteps=False):
