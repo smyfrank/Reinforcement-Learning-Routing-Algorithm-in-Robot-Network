@@ -152,16 +152,27 @@ class dynetworkEnv(gym.Env):
         for nodeIndex in range(self.dynetwork._network.number_of_nodes()):
             node = self.dynetwork._network.nodes[nodeIndex]
             print("Node " + str(nodeIndex) + "'s init position is " + str(node['pos']))
+        print("First edges:")
+        print(self.dynetwork._network.edges.data())
+
         a1 = self.mb.get_next_way_point()
         self.mb.assign_position_to_nodes(self.dynetwork, a1)
         for nodeIndex in range(self.dynetwork._network.number_of_nodes()):
             node = self.dynetwork._network.nodes[nodeIndex]
             print("Node " + str(nodeIndex) + "'s second position is " + str(node['pos']))
+        UE.calculate_nodes_connection(self.dynetwork,self.radius)
+        print("Second edges:")
+        print(self.dynetwork._network.edges.data())
+
         a2 = self.mb.get_next_way_point()
         self.mb.assign_position_to_nodes(self.dynetwork, a2)
+        UE.calculate_nodes_connection(self.dynetwork, self.radius)
         for nodeIndex in range(self.dynetwork._network.number_of_nodes()):
             node = self.dynetwork._network.nodes[nodeIndex]
             print("Node " + str(nodeIndex) + "'s third position is " + str(node['pos']))
+        UE.calculate_nodes_connection(self.dynetwork, self.radius)
+        print("Third edges:")
+        print(self.dynetwork._network.edges.data())
 
     '''helper function to update learning environment in each time stamp''' 
     def updateWhole(self, agent, learn = True, q=True, sp = False, rewardfun='reward5', savesteps=False):
