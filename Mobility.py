@@ -14,14 +14,20 @@ class Mobility(object):
         else:
             print('Undefined mobility model')
 
+    '''get next position of all nodes, return a dictionary'''
     def get_next_way_point(self):
         positions = next(self.mb)
+        node_positions = {}
+        for i in range(self.node_number):
+            node_positions[i] = positions[i].copy()
 
         # record trajectory of nodes
         for i in range(self.node_number):
-            self.trajectory.setdefault(i, []).append(positions[i])
+            self.trajectory.setdefault(i, []).append(positions[i].copy())
 
-        return positions
+        return node_positions
 
+    '''Print trajectory of all nodes'''
     def print_trajectory(self):
+        print("Each Nodes' trajectory are:")
         print(self.trajectory)
