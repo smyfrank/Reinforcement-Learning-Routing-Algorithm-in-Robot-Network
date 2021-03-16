@@ -140,17 +140,28 @@ class dynetworkEnv(gym.Env):
 
         # TODO: write_gexf of geometric graph
         # nx.write_gexf(network, results_dir + "graph.gexf")
-        for nodeIndex in network.nodes:
-            node = network.nodes[nodeIndex]
-            print("Node " + str(nodeIndex) + "'s init position is " + str(node['pos']))
 
         self.dynetwork = copy.deepcopy(self.initial_dynetwork)
         '''use dynetwork class method randomGeneratePackets to populate the network with packets'''
         self.dynetwork.randomGeneratePackets(copy.deepcopy(self.npackets), False)
 
         # TODO: positions to plot nodes
-        # self._positions = nx.spring_layout(self.dynetwork._network)  # Position nodes, return a dictionary of positions keyed by node.
-        self._positions = init_pos
+        self._positions = nx.spring_layout(self.dynetwork._network)  # Position nodes, return a dictionary of positions keyed by node.
+
+        '''Test here'''
+        for nodeIndex in range(self.dynetwork._network.number_of_nodes()):
+            node = self.dynetwork._network.nodes[nodeIndex]
+            print("Node " + str(nodeIndex) + "'s init position is " + str(node['pos']))
+        a1 = self.mb.get_next_way_point()
+        self.mb.assign_position_to_nodes(self.dynetwork, a1)
+        for nodeIndex in range(self.dynetwork._network.number_of_nodes()):
+            node = self.dynetwork._network.nodes[nodeIndex]
+            print("Node " + str(nodeIndex) + "'s second position is " + str(node['pos']))
+        a2 = self.mb.get_next_way_point()
+        self.mb.assign_position_to_nodes(self.dynetwork, a2)
+        for nodeIndex in range(self.dynetwork._network.number_of_nodes()):
+            node = self.dynetwork._network.nodes[nodeIndex]
+            print("Node " + str(nodeIndex) + "'s third position is " + str(node['pos']))
 
     '''helper function to update learning environment in each time stamp''' 
     def updateWhole(self, agent, learn = True, q=True, sp = False, rewardfun='reward5', savesteps=False):
