@@ -63,4 +63,5 @@ def calculate_nodes_connection(dyNetwork, radius):
                 if math.sqrt(math.pow((pos1[0]-pos2[0]), 2) +math.pow((pos1[1]-pos2[1]), 2)) <= radius:
                     dyNetwork._network.add_edge(i, j)
                 else:
-                    dyNetwork._network.remove_edge(i, j)
+                    if dyNetwork._network.has_edge(i, j):
+                        dyNetwork._network.remove_edge(i, j)
