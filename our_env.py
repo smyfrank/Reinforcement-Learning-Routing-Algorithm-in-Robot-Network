@@ -178,7 +178,7 @@ class dynetworkEnv(gym.Env):
     def updateWhole(self, agent, learn = True, q=True, sp = False, rewardfun='reward5', savesteps=False):
 
         # TODO: change network
-        # self.change_network()
+        self.change_network()
         
         if q:
             self.purgatory(False)
@@ -192,8 +192,10 @@ class dynetworkEnv(gym.Env):
             self.update_time(True)
             self.sp_router(self.router_type, 'delay', savesteps)
         
-    '''Use to update edges in network'''
+    '''Use to update edges in network, depending on mobility of nodes and communication range'''
     def change_network(self):
+        '''
+        previous edge update methods
         UE.Delete(self.dynetwork, self.min_edge_removal, self.max_edge_removal)
         UE.Restore(self.dynetwork)
         if self.edge_change_type == 'none':
@@ -202,6 +204,10 @@ class dynetworkEnv(gym.Env):
             UE.Sinusoidal(self.dynetwork)
         else:
             UE.Random_Walk(self.dynetwork)
+        '''
+        temp_position = self.mb.get_next_way_point()
+        self.mb.assign_position_to_nodes(self.dynetwork, temp_position)
+        UE.calculate_nodes_connection(self.dynetwork, self.radius)
     
     '''Method for emptying 'purgatory' which holds indices of packets that have
        been delivered so they may be reused'''
