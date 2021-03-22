@@ -178,7 +178,7 @@ class dynetworkEnv(gym.Env):
     def updateWhole(self, agent, learn = True, q=True, sp = False, rewardfun='reward5', savesteps=False):
 
         # TODO: change network
-        # self.change_network()
+        self.change_network()
         
         if q:
             self.purgatory(False)
