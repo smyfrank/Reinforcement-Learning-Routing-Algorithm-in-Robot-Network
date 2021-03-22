@@ -33,7 +33,7 @@ network_load = np.arange(500, 5500, 500)
 for i in network_load:
     if i <= 0:
         print("Error: Network load must be positive.")
-        sys.exit
+        exit()
     if i >= env.nnodes*env.max_queue:
         print("Error: Network load cannot exceed nodes times max queue size.")
 env.reset(max(network_load), False)
@@ -77,7 +77,7 @@ for i_episode in range(numEpisode):
     rejectionNums_learning.append(env.dynetwork._rejections/(env.dynetwork._initializations + env.npackets))
     print(env.calc_avg_delivery())
     
-    env.reset(max(network_load), False)
+    env.reset(max(network_load), False)  # Use the max network load to learn
 
 script_dir = os.path.dirname(__file__)
 results_dir = os.path.join(script_dir, 'plots/')
