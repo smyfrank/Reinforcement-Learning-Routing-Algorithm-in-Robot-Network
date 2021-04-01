@@ -35,10 +35,11 @@ class QAgent(object):
     ''' Use this function to initialize the q-table, the q-table is stable since the network is not mobile'''
     # TODO: q-table must be generated that can be adjust to mobile network.
     def generate_q_table(self, network):
+        print("Begin to generate_q_table")
         q_table = {}
-        num_nodes = len(network)
+        num_nodes = network.number_of_nodes()
         for currpos in range(num_nodes):
-            nlist = list(network.neighbors(currpos))
+            nlist = list(range(num_nodes))
             for dest in range(num_nodes):
                 q_table[(currpos, dest)] = {}
                 for action in nlist:
@@ -48,6 +49,9 @@ class QAgent(object):
                         ''' Initialize using Shortest Path'''
                     else:
                         q_table[(currpos, dest)][action] = 10  # Why set 10 if current node is destination?
+        print("q-table:")
+        print(q_table)
+        print("End of generate_q_table")
         return q_table
 
     '''Returns best action for a given state, action is the next step node number. '''
