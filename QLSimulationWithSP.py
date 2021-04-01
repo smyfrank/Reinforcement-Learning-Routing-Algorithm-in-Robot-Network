@@ -25,7 +25,7 @@ trials = 5
    Increases runtime and discouraged for large networks '''
 show_example_comparison = False
 '''Mark true to perform shortest path simultaneously during testing for comparison to Q-learning'''
-sp = True
+sp = False
 '''Initialize environment'''
 env = dynetworkEnv()
 '''Specify list of network loads to test'''
