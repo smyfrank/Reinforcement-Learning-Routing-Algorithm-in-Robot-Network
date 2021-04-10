@@ -48,7 +48,7 @@ class dynetworkEnv(gym.Env):
         self.nedges = 3  # ABANDON Number of edges to attach from a new node to existing nodes
         self.minSpeed = 0.002
         self.maxSpeed = 0.005   # define the min and max speed of node
-        self.mobility_model = 'random_waypoint'
+        self.mobility_model = 'gauss_markov'
         self.mb = None
 
         self.max_queue = 150
@@ -316,8 +316,8 @@ class dynetworkEnv(gym.Env):
                 if sendctr == sending_capacity:
                     self.dynetwork._rejections +=(1*(len(node['sending_queue'])))
                     break
-                self.packet = self.curr_queue[0]
-                pkt_state = self.get_state(copy.deepcopy(self.packet))
+                self.packet = self.curr_queue[0]    # current processing packet
+                pkt_state = self.get_state(copy.deepcopy(self.packet))  # get_state return the cur_pos and dest_pos
                 nlist = list(self.dynetwork._network.neighbors(pkt_state[0]))  # neighbors(G,n) returns a list of nodes connected to node n.
                 action = agent.act(pkt_state, nlist)
                 reward, self.remaining, self.curr_queue, action = self.step(action, pkt_state[0], rewardfun, savesteps)
@@ -373,7 +373,7 @@ class dynetworkEnv(gym.Env):
             self.dynetwork._deliveries += 1
             self.dynetwork.GeneratePacket(self.packet, False, random.randint(0, 5))  # the use of wait
             self.curr_queue.remove(self.packet)
-            reward = 20*self.nnodes  # TODO: reward of the termination
+            reward = 10  # TODO: reward of the termination (Rmax)
         else:
             self.curr_queue.remove(self.packet)
             try:
@@ -391,9 +391,11 @@ class dynetworkEnv(gym.Env):
                     reward = self.reward6(next_step)
                 if rewardfun == 'reward7':
                     reward = self.reward7(next_step)
+                if rewardfun == 'reward8':
+                    reward = self.reward8(curr_node, next_step)
             except nx.NetworkXNoPath:
                 """ if the node the packet was just sent to has no available path to dest_node, we assign a reward of -50 """
-                reward = -50  # TODO: reward of void area/dead end
+                reward = -10  # TODO: reward of void area/dead end (-Rmax)
             self.dynetwork._network.nodes[next_step]['receiving_queue'].append(
                 (self.packet, weight))
         return reward
@@ -457,6 +459,23 @@ class dynetworkEnv(gym.Env):
     '''Extra reward function, change as desired to use in rewards.py'''
     def reward7(self, next_step):
         return 0
+
+    '''The expected reward function, which considers edge delay, energy, buffer'''
+    # TODO: reward function
+    def reward8(self, cur_pos, next_step):
+        link_delay = self.dynetwork._network[cur_pos][next_step]['edge_delay']
+        buf_factor = 1 - len(self.dynetwork._network.nodes[next_step]['receiving_queue']) / self.max_queue
+        curnode_last_geopos = self.mb.trajectory[cur_pos][-2]
+        curnode_now_geopos = self.mb.trajectory[cur_pos][-1]
+        nextstep_last_geopos = self.mb.trajectory[next_step][-2]
+        nextstep_now_geopos = self.mb.trajectory[next_step][-1]
+
+        w1 = 1
+        w2 = 1
+        w3 = 1
+
+        reward = w1 * math.exp(-link_delay) + w3 * buf_factor
+        return reward
 
     '''--------------------SHORTEST PATH-----------------'''
 
