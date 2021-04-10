@@ -64,7 +64,7 @@ def calculate_nodes_connection(dyNetwork, radius):
                     dyNetwork._network.add_edge(i, j)
 
                     # TODO: Here we set the edge delay as 1 temporarily
-                    dyNetwork._network[i][j]['edge_delay'] = 0.1
+                    dyNetwork._network[i][j]['edge_delay'] = 1
                 else:
                     if dyNetwork._network.has_edge(i, j):
                         dyNetwork._network.remove_edge(i, j)
