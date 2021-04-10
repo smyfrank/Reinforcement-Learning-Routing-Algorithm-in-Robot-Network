@@ -373,7 +373,7 @@ class dynetworkEnv(gym.Env):
             self.dynetwork._deliveries += 1
             self.dynetwork.GeneratePacket(self.packet, False, random.randint(0, 5))  # the use of wait
             self.curr_queue.remove(self.packet)
-            reward = 10  # TODO: reward of the termination (Rmax)
+            reward = 5  # TODO: reward of the termination (Rmax)
         else:
             self.curr_queue.remove(self.packet)
             try:
@@ -395,7 +395,7 @@ class dynetworkEnv(gym.Env):
                     reward = self.reward8(curr_node, next_step)
             except nx.NetworkXNoPath:
                 """ if the node the packet was just sent to has no available path to dest_node, we assign a reward of -50 """
-                reward = -10  # TODO: reward of void area/dead end (-Rmax)
+                reward = -5  # TODO: reward of void area/dead end (-Rmax)
             self.dynetwork._network.nodes[next_step]['receiving_queue'].append(
                 (self.packet, weight))
         return reward
@@ -469,12 +469,24 @@ class dynetworkEnv(gym.Env):
         curnode_now_geopos = self.mb.trajectory[cur_pos][-1]
         nextstep_last_geopos = self.mb.trajectory[next_step][-2]
         nextstep_now_geopos = self.mb.trajectory[next_step][-1]
+        curnode_angle = math.atan((curnode_now_geopos[1] - curnode_last_geopos[1]) / (curnode_now_geopos[0] - curnode_last_geopos[0]))
+        nextstep_angle = math.atan((nextstep_now_geopos[1] - nextstep_last_geopos[1]) / (nextstep_now_geopos[0] - nextstep_last_geopos[0]))
+        mobility_factor = (math.cos(nextstep_angle - curnode_angle) + 2) / 3    # range from 1/3 to 1
+        pos_factor = 1 - (math.sqrt(math.pow(nextstep_now_geopos[0] - curnode_now_geopos[0], 2) + math.pow(nextstep_now_geopos[1] - curnode_now_geopos[1], 2))) / self.radius
+
+        """
+        print("link_delay = ", link_delay, "delayfactor = ", math.exp(-link_delay))
+        print("angle1 = ", curnode_angle, "angle2 = ", nextstep_angle)
+        print("mobility_factor = ", mobility_factor)
+        print("buf_factor = ", buf_factor)
+        print("pos_factor = ", pos_factor)
+        """
 
         w1 = 1
         w2 = 1
         w3 = 1
 
-        reward = w1 * math.exp(-link_delay) + w3 * buf_factor
+        reward = w1 * math.exp(-link_delay) + w2 * mobility_factor * pos_factor + w3 * buf_factor
         return reward
 
     '''--------------------SHORTEST PATH-----------------'''
