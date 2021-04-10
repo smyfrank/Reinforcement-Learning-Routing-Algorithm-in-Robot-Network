@@ -1,4 +1,5 @@
 from pymobility.models.mobility import random_waypoint
+from pymobility.models.mobility import gauss_markov
 import copy
 
 '''This file add mobility to the nodes of the network'''
@@ -11,6 +12,8 @@ class Mobility(object):
         self.node_number = nnodes
         if mobility_model == 'random_waypoint':  # instance of mobility model, actually a iter generator
             self.mb = random_waypoint(nnodes, dimensions=(1, 1), velocity=(min_speed, max_speed), wt_max=1.0)
+        elif mobility_model == 'gauss_markov':
+            self.mb = gauss_markov(nnodes, dimensions=(1, 1), velocity_mean=(min_speed + max_speed) / 2)
         else:
             print('Undefined mobility model')
 
