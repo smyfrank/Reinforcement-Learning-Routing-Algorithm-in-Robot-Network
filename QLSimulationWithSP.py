@@ -14,7 +14,7 @@ numEpisode = 30
 '''Max length of one episode'''
 time_steps = 2000
 '''Specify reward function (listed in our_env.py)'''
-rewardfunction = 'reward5'
+rewardfunction = 'reward8'
 '''Mark true to generate plots of performance while learning'''
 learning_plot = True
 '''Mark true to generate plots of performance for different test network loads'''
