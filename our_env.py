@@ -486,7 +486,61 @@ class dynetworkEnv(gym.Env):
         w2 = 1
         w3 = 1
 
-        reward = w1 * math.exp(-link_delay) + w2 * mobility_factor * pos_factor + w3 * buf_factor
+        reward = w1 * math.exp(-link_delay) * w2 * mobility_factor + w3 * buf_factor
+        return reward
+
+    def reward9(self, cur_pos, next_step):
+        link_delay = self.dynetwork._network[cur_pos][next_step]['edge_delay']
+        buf_factor = 1 - len(self.dynetwork._network.nodes[next_step]['receiving_queue']) / self.max_queue
+        curnode_last_geopos = self.mb.trajectory[cur_pos][-2]
+        curnode_now_geopos = self.mb.trajectory[cur_pos][-1]
+        nextstep_last_geopos = self.mb.trajectory[next_step][-2]
+        nextstep_now_geopos = self.mb.trajectory[next_step][-1]
+        curnode_angle = math.atan((curnode_now_geopos[1] - curnode_last_geopos[1]) / (curnode_now_geopos[0] - curnode_last_geopos[0]))
+        nextstep_angle = math.atan((nextstep_now_geopos[1] - nextstep_last_geopos[1]) / (nextstep_now_geopos[0] - nextstep_last_geopos[0]))
+        mobility_factor = (math.cos(nextstep_angle - curnode_angle) + 2) / 3    # range from 1/3 to 1
+        pos_factor = 1 - (math.sqrt(math.pow(nextstep_now_geopos[0] - curnode_now_geopos[0], 2) + math.pow(nextstep_now_geopos[1] - curnode_now_geopos[1], 2))) / self.radius
+
+        """
+        print("link_delay = ", link_delay, "delayfactor = ", math.exp(-link_delay))
+        print("angle1 = ", curnode_angle, "angle2 = ", nextstep_angle)
+        print("mobility_factor = ", mobility_factor)
+        print("buf_factor = ", buf_factor)
+        print("pos_factor = ", pos_factor)
+        """
+
+        w1 = 1
+        w2 = 1
+        w3 = 1
+
+        reward = w1 * math.exp(-link_delay) + w3 * buf_factor
+        return reward
+
+    def reward10(self, cur_pos, next_step):
+        link_delay = self.dynetwork._network[cur_pos][next_step]['edge_delay']
+        buf_factor = 1 - len(self.dynetwork._network.nodes[next_step]['receiving_queue']) / self.max_queue
+        curnode_last_geopos = self.mb.trajectory[cur_pos][-2]
+        curnode_now_geopos = self.mb.trajectory[cur_pos][-1]
+        nextstep_last_geopos = self.mb.trajectory[next_step][-2]
+        nextstep_now_geopos = self.mb.trajectory[next_step][-1]
+        curnode_angle = math.atan((curnode_now_geopos[1] - curnode_last_geopos[1]) / (curnode_now_geopos[0] - curnode_last_geopos[0]))
+        nextstep_angle = math.atan((nextstep_now_geopos[1] - nextstep_last_geopos[1]) / (nextstep_now_geopos[0] - nextstep_last_geopos[0]))
+        mobility_factor = (math.cos(nextstep_angle - curnode_angle) + 2) / 3    # range from 1/3 to 1
+        pos_factor = 1 - (math.sqrt(math.pow(nextstep_now_geopos[0] - curnode_now_geopos[0], 2) + math.pow(nextstep_now_geopos[1] - curnode_now_geopos[1], 2))) / self.radius
+
+        """
+        print("link_delay = ", link_delay, "delayfactor = ", math.exp(-link_delay))
+        print("angle1 = ", curnode_angle, "angle2 = ", nextstep_angle)
+        print("mobility_factor = ", mobility_factor)
+        print("buf_factor = ", buf_factor)
+        print("pos_factor = ", pos_factor)
+        """
+
+        w1 = 1
+        w2 = 1
+        w3 = 1
+
+        reward = w1 * math.exp(-link_delay)
         return reward
 
     '''--------------------SHORTEST PATH-----------------'''
