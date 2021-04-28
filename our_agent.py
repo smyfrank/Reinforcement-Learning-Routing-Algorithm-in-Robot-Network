@@ -1,4 +1,6 @@
 import collections
+import sys
+
 import numpy as np
 import random
 import networkx as nx
@@ -30,8 +32,8 @@ class QAgent(object):
             "decay_rate": 0.999,
             "update_epsilon": False,
             }
+        self.number_of_nodes = dynetwork._network.number_of_nodes()
         self.q = self.generate_q_table(dynetwork._network)
-        (self.strategy_table, self.average_strategy_table) = self.generate_strategy_table(dynetwork._network)
 
     ''' Use this function to initialize the q-table, the q-table is stable since the network is not mobile'''
     # TODO: q-table must be generated that can be adjust to mobile network.
@@ -55,32 +57,6 @@ class QAgent(object):
         print(q_table)
         print("End of generate_q_table")
         return q_table
-
-    '''Initialize the strategy-table'''
-    def generate_strategy_table(self, network):
-        print("Begin to generate_strategy_table")
-        strategy_table = {}
-        average_strategy_table = {}
-        num_nodes = network.number_of_nodes()
-        for currpos in range(num_nodes):
-            nlist = list(range(num_nodes))
-            for dest in range(num_nodes):
-                strategy_table[(currpos, dest)] = {}
-                average_strategy_table[(currpos, dest)] = {}
-                for action in nlist:
-                    if currpos != dest:
-                        '''Initialize 1/|A| in strategy-table and average strategy table except destination'''
-                        strategy_table[(currpos, dest)][action] = 1 / (network.number_of_nodes() - 1)
-                        average_strategy_table[(currpos, dest)][action] = 1 / (network.number_of_nodes() - 1)
-                    else:
-                        strategy_table[(currpos, dest)][action] = 0
-                        average_strategy_table[(currpos, dest)][action] = 0
-        print("strategy-table:")
-        print(strategy_table)
-        print("average-strategy-table:")
-        print(average_strategy_table)
-        print("End of generate_strategy_table")
-        return strategy_table, average_strategy_table
 
     '''Returns best action for a given state, action is the next step node number. '''
     def act(self, state, neighbor):
@@ -114,3 +90,141 @@ class QAgent(object):
 
             """ Q learning algorithm """
             self.q[(n, dest)][action] = self.q[(n, dest)][action] + (self.config["learning_rate"])*(reward + self.config["discount"] * max_q - self.q[(n, dest)][action])
+
+
+"""Class Multi_QAgent inherit class QAgent to perform multi-agent reinforcement learning"""
+class Multi_QAgent(QAgent):
+
+    def __init__(self, dynetwork):
+        QAgent.__init__(self, dynetwork)
+        self.config = {
+            "learning_rate": 0.3,
+            "epsilon": 0.3,
+            "discount": 0.9,
+            "decay_rate": 0.999,
+            "update_epsilon": False,
+            "delta_win": 0.0025,
+            "delta_lose": 0.01
+            }
+        (self.policy, self.mean_policy) = self.generate_strategy_table(dynetwork._network)
+        self.counter = self.generate_counter()
+        sum_policy = sum(self.policy[(1, 3)].values())
+        print("sum_policy is:" + str(sum_policy))
+
+    """Initialize the counter"""
+    def generate_counter(self):
+        print("Begin to generate counter")
+        counter = {}
+        for currpos in range(self.number_of_nodes):
+            nlist = list(range(self.number_of_nodes))
+            for dest in range(self.number_of_nodes):
+                if currpos != dest:
+                    counter[(currpos, dest)] = 0
+        print("End of generate counter")
+        return counter
+
+    """Initialize the strategy-table"""
+    def generate_strategy_table(self, network):
+        print("Begin to generate_strategy_table")
+        strategy_table = {}
+        average_strategy_table = {}
+        num_nodes = network.number_of_nodes()
+        for currpos in range(num_nodes):
+            nlist = list(range(num_nodes))
+            for dest in range(num_nodes):
+                strategy_table[(currpos, dest)] = {}
+                average_strategy_table[(currpos, dest)] = {}
+                for action in nlist:
+                    if (currpos != dest) and (currpos != action):
+                        '''Initialize 1/|A| in strategy-table and average strategy table except destination'''
+                        strategy_table[(currpos, dest)][action] = 1 / (network.number_of_nodes() - 1)
+                        average_strategy_table[(currpos, dest)][action] = 1 / (network.number_of_nodes() - 1)
+        print("strategy-table:")
+        print(strategy_table)
+        print("average-strategy-table:")
+        print(average_strategy_table)
+        print("End of generate_strategy_table")
+        return strategy_table, average_strategy_table
+
+    """Returns best action for a given state, action is the next step node number, depends on exploration-exploitation , strategy-table and q-table"""
+    def act(self, state, neighbor):
+        if random.uniform(0, 1) < self.config['epsilon']:
+            if not bool(neighbor):
+                return None
+            else:
+                next_step = random.choice(neighbor)
+                return next_step
+        else:
+            # TODO: policy_value_list may all be 0
+            temp_neighbor_strategy_dict = {n: self.policy[state][n] for n in self.policy[state] if n in neighbor}
+            policy_key_list = list(temp_neighbor_strategy_dict.keys())
+            policy_value_list = list(temp_neighbor_strategy_dict.values())
+            if not bool(temp_neighbor_strategy_dict):
+                return None
+            else:
+                try:
+                    if np.sum(policy_value_list) == 1.0:
+                        next_step = np.random.choice(a=policy_key_list, p=policy_value_list)
+                        return next_step
+                    else:
+                        if not any(policy_value_list):
+                            next_step = random.choice(neighbor)
+                            return next_step
+                        else:
+                            policy_value_list_new = np.divide(policy_value_list, sum(policy_value_list))
+                            next_step = np.random.choice(policy_key_list, p=policy_value_list_new)
+                            return next_step
+                except ValueError:
+                    print("Value Error, " + str(policy_value_list))
+                    sys.exit()
+
+
+    """update q-table, policy, mean-policy"""
+    def learn(self, current_event, reward, action):
+        if (action == None) or (reward == None):
+            pass
+        else:
+            cur_pos = current_event[0]
+            dest = current_event[1]
+            max_q = max(self.q[(action, dest)].values())
+
+            """update q-table"""
+            self.q[(cur_pos, dest)][action] = self.q[(cur_pos, dest)][action] + (self.config["learning_rate"])*(reward + self.config["discount"] * max_q - self.q[(cur_pos, dest)][action])
+
+            """update mean-policy"""
+            self.update_mean_pi(current_event)
+
+            """update policy"""
+            self.update_pi(current_event)
+        return
+
+    """calculate delta"""
+    def delta(self, state):
+        sum_policy = 0.0
+        sum_mean_policy = 0.0
+        for i in self.policy[(state[0], state[1])].keys():
+            sum_policy += (self.policy[state[0], state[1]][i] * self.q[state[0], state[1]][i])
+            sum_mean_policy += (self.mean_policy[state[0], state[1]][i] * self.q[state[0], state[1]][i])
+        if (sum_policy > sum_mean_policy):
+            return self.config["delta_win"]
+        else:
+            return self.config["delta_lose"]
+
+    """update policy table"""
+    def update_pi(self, state):
+        maxQValueIndex = max(self.q[(state[0], state[1])], key=self.q[(state[0], state[1])].get)
+        for i in self.policy[(state[0], state[1])].keys():
+            d_plus = self.delta(state)
+            d_minus = ((-1.0) * d_plus) / ((self.number_of_nodes - 1) - 1.0)
+            if (i == maxQValueIndex):
+                self.policy[(state[0], state[1])][i] = min(1.0, self.policy[(state[0], state[1])][i] + d_plus)
+            else:
+                self.policy[(state[0], state[1])][i] = max(0.0, self.policy[(state[0], state[1])][i] + d_minus)
+        return
+
+    """update mean-policy table"""
+    def update_mean_pi(self, state):
+        self.counter[(state[0], state[1])] += 1
+        for i in self.policy[(state[0], state[1])].keys():
+            self.mean_policy[(state[0], state[1])][i] += ((1.0/self.counter[(state[0], state[1])]) * (self.policy[(state[0], state[1])][i]) - self.mean_policy[(state[0], state[1])][i])
+        return
