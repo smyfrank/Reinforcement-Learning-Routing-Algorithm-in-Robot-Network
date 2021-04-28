@@ -58,8 +58,8 @@ class dynetworkEnv(gym.Env):
         self.max_edge_weight = 10
         self.min_edge_removal = 0
         self.max_edge_removal = 10
-        self.edge_change_type = 'sinusoidal'  # TODO: mobile node change edges
-        self.network_type = 'geometric_graph'  # TODO: use: random_geometric_graph(n, radius, dim=2, pos=None, p=2, seed=None)
+        self.edge_change_type = 'sinusoidal'  # Not in use
+        self.network_type = 'geometric_graph'  # use: random_geometric_graph(n, radius, dim=2, pos=None, p=2, seed=None)
         self.router_type = 'dijkstra'
         self.initial_dynetwork = None
         self.dynetwork = None
@@ -79,12 +79,12 @@ class dynetworkEnv(gym.Env):
         self.sp_nodes_traversed = 0
         self.preds = None
 
-        # TODO: Initiate mobility model here
+        """Initiate mobility model here"""
         self.mb = Mobility.Mobility(self.mobility_model, self.nnodes, self.minSpeed, self.maxSpeed)
         init_pos = self.mb.get_next_way_point()  # get a dict of node position
 
         '''Initialize a dynetwork object using Networkx and dynetwork.py'''
-        # TODO: use random_geometric_graph(n, radius, dim=2, pos=None, p=2, seed=None)
+        """use random_geometric_graph(n, radius, dim=2, pos=None, p=2, seed=None)"""
         if self.network_type == 'geometric_graph':
             network = nx.random_geometric_graph(self.nnodes, self.radius, pos=init_pos)
         else:
@@ -175,7 +175,7 @@ class dynetworkEnv(gym.Env):
         print(self.dynetwork._network.edges.data())
 
     '''helper function to update learning environment in each time stamp''' 
-    def updateWhole(self, agent, learn = True, q=True, sp = False, rewardfun='reward5', savesteps=False):
+    def updateWhole(self, agent, q=True, sp = False, rewardfun='reward5', savesteps=False):
 
         # TODO: change network
         self.change_network()
@@ -184,7 +184,7 @@ class dynetworkEnv(gym.Env):
             self.purgatory(False)
             self.update_queues(False)
             self.update_time(False)
-            self.router(agent, learn, rewardfun, savesteps) 
+            self.router(agent, rewardfun, savesteps)
 
         if sp:
             self.purgatory(True)
@@ -275,7 +275,7 @@ class dynetworkEnv(gym.Env):
         return (pkt.get_curPos(), pkt.get_endPos())
 
     '''loop sending queue in the loop of all nodes, record some congestion measure'''
-    def router(self, agent, will_learn = True, rewardfun='reward5', savesteps=False):
+    def router(self, agent, rewardfun='reward5', savesteps=False):
         node_queue_lengths = [0]
         num_nodes_at_capacity = 0
         num_nonEmpty_nodes = 0
@@ -323,8 +323,7 @@ class dynetworkEnv(gym.Env):
                 reward, self.remaining, self.curr_queue, action = self.step(action, pkt_state[0], rewardfun, savesteps)
                 if reward != None:
                     sendctr += 1
-                if will_learn:
-                    agent.learn(pkt_state, reward, action)
+                agent.learn(pkt_state, reward, action)
 
             node['sending_queue'] = self.remaining + node['sending_queue']
 
@@ -482,9 +481,9 @@ class dynetworkEnv(gym.Env):
         print("pos_factor = ", pos_factor)
         """
 
-        w1 = 1
-        w2 = 1
-        w3 = 1
+        w1 = 0.4
+        w2 = 0.3
+        w3 = 0.3
 
         reward = w1 * math.exp(-link_delay) * w2 * mobility_factor + w3 * buf_factor
         return reward

@@ -13,8 +13,10 @@ env.npackets + env.max_initializations packets OR after time_steps.'''
 numEpisode = 30 
 '''Max length of one episode'''
 time_steps = 2000
+'''Specify learn method'''
+learn_method = 'QLearn'
 '''Specify reward function (listed in our_env.py)'''
-rewardfunction = 'reward10'
+rewardfunction = 'reward8'
 '''Mark true to generate plots of performance while learning'''
 learning_plot = True
 '''Mark true to generate plots of performance for different test network loads'''

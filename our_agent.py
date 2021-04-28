@@ -31,6 +31,7 @@ class QAgent(object):
             "update_epsilon": False,
             }
         self.q = self.generate_q_table(dynetwork._network)
+        (self.strategy_table, self.average_strategy_table) = self.generate_strategy_table(dynetwork._network)
 
     ''' Use this function to initialize the q-table, the q-table is stable since the network is not mobile'''
     # TODO: q-table must be generated that can be adjust to mobile network.
@@ -48,11 +49,38 @@ class QAgent(object):
                         q_table[(currpos, dest)][action] = 0
                         ''' Initialize using Shortest Path'''
                     else:
+                        # TODO: Initialize q_table value when current node is destination
                         q_table[(currpos, dest)][action] = 10  # Why set 10 if current node is destination?
         print("q-table:")
         print(q_table)
         print("End of generate_q_table")
         return q_table
+
+    '''Initialize the strategy-table'''
+    def generate_strategy_table(self, network):
+        print("Begin to generate_strategy_table")
+        strategy_table = {}
+        average_strategy_table = {}
+        num_nodes = network.number_of_nodes()
+        for currpos in range(num_nodes):
+            nlist = list(range(num_nodes))
+            for dest in range(num_nodes):
+                strategy_table[(currpos, dest)] = {}
+                average_strategy_table[(currpos, dest)] = {}
+                for action in nlist:
+                    if currpos != dest:
+                        '''Initialize 1/|A| in strategy-table and average strategy table except destination'''
+                        strategy_table[(currpos, dest)][action] = 1 / (network.number_of_nodes() - 1)
+                        average_strategy_table[(currpos, dest)][action] = 1 / (network.number_of_nodes() - 1)
+                    else:
+                        strategy_table[(currpos, dest)][action] = 0
+                        average_strategy_table[(currpos, dest)][action] = 0
+        print("strategy-table:")
+        print(strategy_table)
+        print("average-strategy-table:")
+        print(average_strategy_table)
+        print("End of generate_strategy_table")
+        return strategy_table, average_strategy_table
 
     '''Returns best action for a given state, action is the next step node number. '''
     def act(self, state, neighbor):
