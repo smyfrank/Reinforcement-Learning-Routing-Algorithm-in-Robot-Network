@@ -1,9 +1,7 @@
-import collections
 import sys
 
 import numpy as np
 import random
-import networkx as nx
 
 '''
     The agent file defines a learning agent and its hyperparameters
@@ -26,8 +24,8 @@ class QAgent(object):
         
         """
         self.config = {
-            "learning_rate": 0.8,
-            "epsilon": 0.6,
+            "learning_rate": 0.3,
+            "epsilon": 0.3,
             "discount": 0.9,
             "decay_rate": 0.999,
             "update_epsilon": False,

@@ -40,7 +40,7 @@ for i in network_load:
     if i >= env.nnodes*env.max_queue:
         print("Error: Network load cannot exceed nodes times max queue size.")
 env.reset(max(network_load), False)
-agent = Multi_QAgent(env.dynetwork)
+agent = QAgent(env.dynetwork)
 
 '''Performance Measures for Q-Learning While Learning'''
 avg_deliv_learning = []
@@ -203,7 +203,7 @@ for i in range(len(network_load)):
                 s_done = (env.dynetwork.sp_deliveries >= total)
             else:
                 s_done = True
-            env.updateWhole(agent, learn=False, q=not q_done, sp=not s_done, rewardfun=rewardfunction, savesteps=False)
+            env.updateWhole(agent, q=not q_done, sp=not s_done, rewardfun=rewardfunction, savesteps=False)
 
             if q_done and s_done:
                 print("Finished trial ", currTrial)
