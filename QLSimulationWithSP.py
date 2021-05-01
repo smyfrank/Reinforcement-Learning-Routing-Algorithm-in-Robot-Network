@@ -1,6 +1,5 @@
 from our_agent import Multi_QAgent
 from our_env import *
-import matplotlib
 import matplotlib.pyplot as plt
 '''
 This program generates a network, teaches a Q-learning agent
@@ -40,7 +39,7 @@ for i in network_load:
     if i >= env.nnodes*env.max_queue:
         print("Error: Network load cannot exceed nodes times max queue size.")
 env.reset(max(network_load), False)
-agent = QAgent(env.dynetwork)
+agent = Multi_QAgent(env.dynetwork)
 
 '''Performance Measures for Q-Learning While Learning'''
 avg_deliv_learning = []
