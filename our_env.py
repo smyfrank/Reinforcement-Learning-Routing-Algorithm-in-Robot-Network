@@ -148,7 +148,8 @@ class dynetworkEnv(gym.Env):
         # TODO: positions to plot nodes
         self._positions = nx.spring_layout(self.dynetwork._network)  # Position nodes, return a dictionary of positions keyed by node.
 
-        '''Test here'''
+        '''Some output of test'''
+        '''
         for nodeIndex in range(self.dynetwork._network.number_of_nodes()):
             node = self.dynetwork._network.nodes[nodeIndex]
             print("Node " + str(nodeIndex) + "'s init position is " + str(node['pos']))
@@ -173,13 +174,14 @@ class dynetworkEnv(gym.Env):
         UE.calculate_nodes_connection(self.dynetwork, self.radius)
         print("Third edges:")
         print(self.dynetwork._network.edges.data())
+        '''
 
-    '''helper function to update learning environment in each time stamp''' 
+    '''helper function to update learning environment in each time stamp'''
     def updateWhole(self, agent, q=True, sp = False, rewardfun='reward5', savesteps=False):
 
         # TODO: change network
         self.change_network()
-        
+
         if q:
             self.purgatory(False)
             self.update_queues(False)
@@ -191,7 +193,7 @@ class dynetworkEnv(gym.Env):
             self.update_queues(True)
             self.update_time(True)
             self.sp_router(self.router_type, 'delay', savesteps)
-        
+
     '''Use to update edges in network, depending on mobility of nodes and communication range'''
     def change_network(self):
         '''
@@ -208,7 +210,7 @@ class dynetworkEnv(gym.Env):
         temp_position = self.mb.get_next_way_point()
         self.mb.assign_position_to_nodes(self.dynetwork, temp_position)
         UE.calculate_nodes_connection(self.dynetwork, self.radius)
-    
+
     '''Method for emptying 'purgatory' which holds indices of packets that have
        been delivered so they may be reused'''
     def purgatory(self, sp=False):
@@ -220,7 +222,7 @@ class dynetworkEnv(gym.Env):
             self.dynetwork._purgatory = []
         for (index, weight) in temp_purgatory:
             self.dynetwork.GeneratePacket(index, sp, weight)  # weight = wait?
-            
+
     '''Takes packets which are now ready to be sent and puts them in the sending queue of the node '''
     def update_queues(self, sp=False):
         if sp:

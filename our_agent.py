@@ -51,8 +51,6 @@ class QAgent(object):
                     else:
                         # TODO: Initialize q_table value when current node is destination
                         q_table[(currpos, dest)][action] = 10  # Why set 10 if current node is destination?
-        print("q-table:")
-        print(q_table)
         print("End of generate_q_table")
         return q_table
 
@@ -106,8 +104,7 @@ class Multi_QAgent(QAgent):
             }
         (self.policy, self.mean_policy) = self.generate_strategy_table(dynetwork._network)
         self.counter = self.generate_counter()
-        sum_policy = sum(self.policy[(1, 3)].values())
-        print("sum_policy is:" + str(sum_policy))
+        (self.old_neighbors, self.new_neighbors) = self.generate_neighbor_table()
 
     """Initialize the counter"""
     def generate_counter(self):
@@ -137,16 +134,22 @@ class Multi_QAgent(QAgent):
                         '''Initialize 1/|A| in strategy-table and average strategy table except destination'''
                         strategy_table[(currpos, dest)][action] = 1 / (network.number_of_nodes() - 1)
                         average_strategy_table[(currpos, dest)][action] = 1 / (network.number_of_nodes() - 1)
-        print("strategy-table:")
-        print(strategy_table)
-        print("average-strategy-table:")
-        print(average_strategy_table)
         print("End of generate_strategy_table")
         return strategy_table, average_strategy_table
 
+    """Initialize neighbors history records"""
+    def generate_neighbor_table(self):
+        print("Begin to generate old and new neighbor table")
+        new_neighbor_table = dict.fromkeys(range(self.number_of_nodes), set())
+        old_neighbor_table = dict.fromkeys(range(self.number_of_nodes), set())
+        print("new_neighbor_table:", new_neighbor_table)
+        print("old_neighbor_table:", old_neighbor_table)
+        return old_neighbor_table, new_neighbor_table
+
     """Returns best action for a given state, action is the next step node number, depends on exploration-exploitation , strategy-table and q-table"""
     def act(self, state, neighbor):
-        if random.uniform(0, 1) < self.config['epsilon']:
+        # TODO: exploration and exploitation
+        if random.uniform(0, 1) < self.neighbors_variation(state, neighbor) * self.config['epsilon'] + 0.3:
             if not bool(neighbor):
                 return None
             else:
@@ -175,7 +178,6 @@ class Multi_QAgent(QAgent):
                 except ValueError:
                     print("Value Error, " + str(policy_value_list))
                     sys.exit()
-
 
     """update q-table, policy, mean-policy"""
     def learn(self, current_event, reward, action):
@@ -226,3 +228,14 @@ class Multi_QAgent(QAgent):
         for i in self.policy[(state[0], state[1])].keys():
             self.mean_policy[(state[0], state[1])][i] += ((1.0/self.counter[(state[0], state[1])]) * (self.policy[(state[0], state[1])][i]) - self.mean_policy[(state[0], state[1])][i])
         return
+
+    """calculate the variation of the number of neighbor nodes"""
+    def neighbors_variation(self, state, new_neighbors):
+        cur_node = state[0]
+        self.old_neighbors[cur_node] = self.new_neighbors[cur_node]
+        self.new_neighbors[cur_node] = set(new_neighbors)
+        union = len(self.new_neighbors[cur_node].union(self.old_neighbors[cur_node]))
+        if union == 0:
+            return 1.0
+        inter = len(self.new_neighbors[cur_node].intersection(self.old_neighbors[cur_node]))
+        return (union - inter) / union
