@@ -51,8 +51,6 @@ class QAgent(object):
                     else:
                         # TODO: Initialize q_table value when current node is destination
                         q_table[(currpos, dest)][action] = 10  # Why set 10 if current node is destination?
-        print("q-table:")
-        print(q_table)
         print("End of generate_q_table")
         return q_table
 
@@ -137,10 +135,6 @@ class Multi_QAgent(QAgent):
                         '''Initialize 1/|A| in strategy-table and average strategy table except destination'''
                         strategy_table[(currpos, dest)][action] = 1 / (network.number_of_nodes() - 1)
                         average_strategy_table[(currpos, dest)][action] = 1 / (network.number_of_nodes() - 1)
-        print("strategy-table:")
-        print(strategy_table)
-        print("average-strategy-table:")
-        print(average_strategy_table)
         print("End of generate_strategy_table")
         return strategy_table, average_strategy_table
 
