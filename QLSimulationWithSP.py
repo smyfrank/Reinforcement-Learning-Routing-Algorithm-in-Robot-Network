@@ -32,6 +32,7 @@ sp = False
 env = dynetworkEnv()
 '''Specify list of network loads to test'''
 network_load = np.arange(500, 5500, 500)
+print("Network load: ", network_load)
 for i in network_load:
     if i <= 0:
         print("Error: Network load must be positive.")
@@ -48,6 +49,7 @@ avg_q_len_learning = []
 avg_perc_at_capacity_learning = []
 rejectionNums_learning = []
 avg_perc_empty_nodes_learning=[]
+delivery_ratio = []
 
 # In each episode, update the network for time_steps times. In each time step, update the whole network, which means
 # 1.update edges 2.generate packet 3.update queue 4. update packet time in queue 5.route all nodes.
@@ -77,7 +79,9 @@ for i_episode in range(numEpisode):
        np.sum(env.dynetwork._num_capacity_node)/np.sum(env.dynetwork._num_working_node))/t) * 100)
     avg_perc_empty_nodes_learning.append((((np.sum(env.dynetwork._num_empty_node))/env.nnodes)/t) *100)
     rejectionNums_learning.append(env.dynetwork._rejections/(env.dynetwork._initializations + env.npackets))
-    print(env.calc_avg_delivery())
+    delivery_ratio.append(env.dynetwork._deliveries/max(network_load))
+    print("end to end delay: ", env.calc_avg_delivery())
+    print("delivery ratio: ", env.dynetwork._deliveries/max(network_load))
     
     env.reset(max(network_load), False)  # Use the max network load to learn
 
