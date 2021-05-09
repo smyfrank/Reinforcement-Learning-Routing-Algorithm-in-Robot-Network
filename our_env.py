@@ -82,13 +82,14 @@ class dynetworkEnv(gym.Env):
         """Initiate mobility model here"""
         self.mb = Mobility.Mobility(self.mobility_model, self.nnodes, self.minSpeed, self.maxSpeed)
         init_pos = self.mb.get_next_way_point()  # get a dict of node position
+        print("min speed is :", self.minSpeed, " max speed is :", self.maxSpeed)
 
         '''Initialize a dynetwork object using Networkx and dynetwork.py'''
         """use random_geometric_graph(n, radius, dim=2, pos=None, p=2, seed=None)"""
         if self.network_type == 'geometric_graph':
             network = nx.random_geometric_graph(self.nnodes, self.radius, pos=init_pos)
         else:
-           network = nx.gnm_random_graph(self.nnodes, self.nedges)
+            network = nx.gnm_random_graph(self.nnodes, self.nedges)
 
         '''node attributes'''
         nx.set_node_attributes(network, copy.deepcopy(self.max_transmit), 'max_send_capacity')
@@ -149,12 +150,13 @@ class dynetworkEnv(gym.Env):
         self._positions = nx.spring_layout(self.dynetwork._network)  # Position nodes, return a dictionary of positions keyed by node.
 
         '''Test here'''
+        '''
         for nodeIndex in range(self.dynetwork._network.number_of_nodes()):
             node = self.dynetwork._network.nodes[nodeIndex]
             print("Node " + str(nodeIndex) + "'s init position is " + str(node['pos']))
         print("First edges:")
         print(self.dynetwork._network.edges.data())
-
+        
         a1 = self.mb.get_next_way_point()
         self.mb.assign_position_to_nodes(self.dynetwork, a1)
         for nodeIndex in range(self.dynetwork._network.number_of_nodes()):
@@ -173,6 +175,7 @@ class dynetworkEnv(gym.Env):
         UE.calculate_nodes_connection(self.dynetwork, self.radius)
         print("Third edges:")
         print(self.dynetwork._network.edges.data())
+        '''
 
     '''helper function to update learning environment in each time stamp''' 
     def updateWhole(self, agent, q=True, sp = False, rewardfun='reward5', savesteps=False):
@@ -370,7 +373,8 @@ class dynetworkEnv(gym.Env):
             """ if packet has reached destination, a new packet is created with the same 'ID' (packet index) but a new destination, which is then redistributed to another node """
             self.dynetwork._delivery_times.append(self.dynetwork._packets.packetList[self.packet].get_time())
             self.dynetwork._deliveries += 1
-            self.dynetwork.GeneratePacket(self.packet, False, random.randint(0, 5))  # the use of wait
+            # TODO：When a packet reaches destination
+            # self.dynetwork.GeneratePacket(self.packet, False, random.randint(0, 5))  # the use of wait
             self.curr_queue.remove(self.packet)
             reward = 5  # TODO: reward of the termination (Rmax)
         else:
