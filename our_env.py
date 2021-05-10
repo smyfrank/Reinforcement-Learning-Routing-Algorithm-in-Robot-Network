@@ -43,17 +43,17 @@ class dynetworkEnv(gym.Env):
     
     '''Initialization of the network'''
     def __init__(self):
-        self.nnodes = 50    # The node queue will be full if there are too few nodes, when generate packet
+        self.nnodes = 100    # The node queue will be full if there are too few nodes, when generate packet
         self.radius = 0.2  # The antenna communication range, the whole map size is 1*1
         self.nedges = 3  # ABANDON Number of edges to attach from a new node to existing nodes
-        self.minSpeed = 0.002
+        self.minSpeed = 0.005
         self.maxSpeed = 0.005   # define the min and max speed of node
         self.mobility_model = 'gauss_markov'
         self.mb = None
 
         self.max_queue = 150
         self.max_transmit = 10
-        self.npackets = 5000
+        self.npackets = 2000
         self.max_initializations = 5000
         self.max_edge_weight = 10
         self.min_edge_removal = 0
@@ -90,6 +90,7 @@ class dynetworkEnv(gym.Env):
             network = nx.random_geometric_graph(self.nnodes, self.radius, pos=init_pos)
         else:
             network = nx.gnm_random_graph(self.nnodes, self.nedges)
+        print("The number of network nodes is ", self.nnodes)
 
         '''node attributes'''
         nx.set_node_attributes(network, copy.deepcopy(self.max_transmit), 'max_send_capacity')
@@ -359,7 +360,7 @@ class dynetworkEnv(gym.Env):
     add edge delay to packet time.
     Check if the node is full/other considerations beforehand. 
     '''
-    def send_packet(self, next_step, rewardfun='reward5', savesteps=False):
+    def send_packet(self, next_step, rewardfun='reward1', savesteps=False):
         reward = 0
         pkt = self.dynetwork._packets.packetList[self.packet]
         curr_node = pkt.get_curPos()
@@ -381,21 +382,9 @@ class dynetworkEnv(gym.Env):
             self.curr_queue.remove(self.packet)
             try:
                 if rewardfun == 'reward1':
-                    reward = self.reward1(next_step, dest_node, weight)
+                    reward = self.reward1(curr_node, next_step)
                 if rewardfun == 'reward2':
-                    reward = self.reward2(next_step, dest_node, weight)
-                if rewardfun == 'reward3':
-                    reward = self.reward3(next_step, dest_node)
-                if rewardfun == 'reward4':
-                    reward = self.reward4(next_step, weight)
-                if rewardfun == 'reward5':
-                    reward = self.reward5(next_step)
-                if rewardfun == 'reward6':
-                    reward = self.reward6(next_step)
-                if rewardfun == 'reward7':
-                    reward = self.reward7(next_step)
-                if rewardfun == 'reward8':
-                    reward = self.reward8(curr_node, next_step)
+                    reward = self.reward2()
             except nx.NetworkXNoPath:
                 """ if the node the packet was just sent to has no available path to dest_node, we assign a reward of -50 """
                 reward = -5  # TODO: reward of void area/dead end (-Rmax)
@@ -405,67 +394,10 @@ class dynetworkEnv(gym.Env):
 
     '''-----------------------------Reward Functions----------------------------'''
 
-    '''Hybrid function that penalizes proportional to queue size'''
-    def reward1(self, next_step, dest_node, weight):
-        """ we reward the packet for being sent to a node according to our current reward function """
-        path_len = nx.shortest_path_length(self.dynetwork._network, next_step, dest_node)
-        queue_size = len(self.dynetwork._network.nodes[next_step]['sending_queue']) + len(self.dynetwork._network.nodes[next_step]['receiving_queue'])
-        return(- path_len - (queue_size + weight))
-
-    '''Hybrid function that penalizes only if queue size exceeds a threshold'''
-    def reward2(self, next_step, dest_node, weight):
-        path_len = nx.shortest_path_length(self.dynetwork._network, next_step, dest_node)
-        queue_size = len(self.dynetwork._network.nodes[next_step]['sending_queue']) + len(self.dynetwork._network.nodes[next_step]['receiving_queue'])
-        emptying_size = weight * self.max_transmit
-        if queue_size > emptying_size:
-            fullness = (queue_size - emptying_size)
-        else:
-            fullness = 0
-        return(- path_len - (fullness + weight))
-
-    '''Function that only takes into account path length'''
-    def reward3(self, next_step, dest_node):
-        path_len = nx.shortest_path_length(self.dynetwork._network, next_step, dest_node)
-        return -(path_len)
-
-    '''Function similar to reward2 that does not use shortest path'''
-    def reward4(self, next_step, weight):
-        queue_size = len(self.dynetwork._network.nodes[next_step]['sending_queue']) + len(self.dynetwork._network.nodes[next_step]['receiving_queue'])
-        emptying_size = weight * self.max_transmit
-        if queue_size > emptying_size:
-            fullness = (queue_size - emptying_size)
-        else:
-            fullness = 0
-        return(-(fullness + weight))
-
-    '''Function that penalizes proportional to difference in queue size and an equilibrium queue size,
-       as well as growth rate of the queue'''
-    def reward5(self, next_step):
-        q = len(self.dynetwork._network.nodes[next_step]['sending_queue']) + len(self.dynetwork._network.nodes[next_step]['receiving_queue'])
-        q_eq = 0.8*self.max_queue
-        w = 5
-        growth = self.dynetwork._network.nodes[next_step]['growth']  # What is 'growth'?
-        return(-(q-q_eq+w*growth))
-
-    '''Function that penalizes for exceeing equilibrium queue size, as well as growth rate of the queue'''
-    def reward6(self, next_step):
-        q = len(self.dynetwork._network.nodes[next_step]['sending_queue']) + len(self.dynetwork._network.nodes[next_step]['receiving_queue'])
-        q_eq = 0.8*self.max_queue
-        excess = q-q_eq
-        w = 5
-        growth = self.dynetwork._network.nodes[next_step]['growth']
-        if excess > 0:
-            return -(excess+w*growth)
-        else:
-            return -(w*growth)
-
-    '''Extra reward function, change as desired to use in rewards.py'''
-    def reward7(self, next_step):
-        return 0
 
     '''The expected reward function, which considers edge delay, energy, buffer'''
     # TODO: reward function
-    def reward8(self, cur_pos, next_step):
+    def reward1(self, cur_pos, next_step):
         link_delay = self.dynetwork._network[cur_pos][next_step]['edge_delay']
         buf_factor = 1 - len(self.dynetwork._network.nodes[next_step]['receiving_queue']) / self.max_queue
         curnode_last_geopos = self.mb.trajectory[cur_pos][-2]
@@ -491,6 +423,10 @@ class dynetworkEnv(gym.Env):
 
         reward = w1 * math.exp(-link_delay) * w2 * mobility_factor + w3 * buf_factor
         return reward
+
+    '''reward function that returns a constant value'''
+    def reward2(self):
+        return 0.5
 
     def reward9(self, cur_pos, next_step):
         link_delay = self.dynetwork._network[cur_pos][next_step]['edge_delay']
