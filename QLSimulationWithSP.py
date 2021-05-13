@@ -10,13 +10,13 @@ network loads.
 
 '''One episode starts with initialization of all the packets and ends with delivery of all of
 env.npackets + env.max_initializations packets OR after time_steps.'''
-numEpisode = 30 
+numEpisode = 40
 '''Max length of one episode'''
 time_steps = 2000
 '''Specify learn method'''
 learn_method = 'QLearn'
 '''Specify reward function (listed in our_env.py)'''
-rewardfunction = 'reward8'
+rewardfunction = 'reward2'
 '''Mark true to generate plots of performance while learning'''
 learning_plot = True
 '''Mark true to generate plots of performance for different test network loads'''
@@ -31,8 +31,8 @@ sp = False
 '''Initialize environment'''
 env = dynetworkEnv()
 '''Specify list of network loads to test'''
-network_load = np.arange(500, 5500, 500)
-print("Network load: ", network_load)
+network_load = np.arange(500, 2500, 500)
+print("Network load for test: ", network_load)
 for i in network_load:
     if i <= 0:
         print("Error: Network load must be positive.")
@@ -41,6 +41,7 @@ for i in network_load:
         print("Error: Network load cannot exceed nodes times max queue size.")
 env.reset(max(network_load), False)
 agent = Multi_QAgent(env.dynetwork)
+print("Algorithm is Multi-Q-learning")
 
 '''Performance Measures for Q-Learning While Learning'''
 avg_deliv_learning = []

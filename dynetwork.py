@@ -117,7 +117,6 @@ class DynamicNetwork(object):
             """ assigns the packet different delivery destination than starting point """ 
             while (startNode == endNode):
                 endNode = random.randint(0, self.num_nodes-1)
-                
             curPack = Packet.Packet(startNode, endNode, startNode, index, 0)
             if midSim:
                 """ appends newly generated packet to startNodes queue """ 
