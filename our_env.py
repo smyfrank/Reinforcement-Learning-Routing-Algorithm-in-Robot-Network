@@ -43,7 +43,7 @@ class dynetworkEnv(gym.Env):
     
     '''Initialization of the network'''
     def __init__(self):
-        self.nnodes = 100    # The node queue will be full if there are too few nodes, when generate packet
+        self.nnodes = 60    # The node queue will be full if there are too few nodes, when generate packet
         self.radius = 0.2  # The antenna communication range, the whole map size is 1*1
         self.nedges = 3  # ABANDON Number of edges to attach from a new node to existing nodes
         self.minSpeed = 0.005
@@ -428,60 +428,6 @@ class dynetworkEnv(gym.Env):
     def reward2(self):
         return 0.5
 
-    def reward9(self, cur_pos, next_step):
-        link_delay = self.dynetwork._network[cur_pos][next_step]['edge_delay']
-        buf_factor = 1 - len(self.dynetwork._network.nodes[next_step]['receiving_queue']) / self.max_queue
-        curnode_last_geopos = self.mb.trajectory[cur_pos][-2]
-        curnode_now_geopos = self.mb.trajectory[cur_pos][-1]
-        nextstep_last_geopos = self.mb.trajectory[next_step][-2]
-        nextstep_now_geopos = self.mb.trajectory[next_step][-1]
-        curnode_angle = math.atan((curnode_now_geopos[1] - curnode_last_geopos[1]) / (curnode_now_geopos[0] - curnode_last_geopos[0]))
-        nextstep_angle = math.atan((nextstep_now_geopos[1] - nextstep_last_geopos[1]) / (nextstep_now_geopos[0] - nextstep_last_geopos[0]))
-        mobility_factor = (math.cos(nextstep_angle - curnode_angle) + 2) / 3    # range from 1/3 to 1
-        pos_factor = 1 - (math.sqrt(math.pow(nextstep_now_geopos[0] - curnode_now_geopos[0], 2) + math.pow(nextstep_now_geopos[1] - curnode_now_geopos[1], 2))) / self.radius
-
-        """
-        print("link_delay = ", link_delay, "delayfactor = ", math.exp(-link_delay))
-        print("angle1 = ", curnode_angle, "angle2 = ", nextstep_angle)
-        print("mobility_factor = ", mobility_factor)
-        print("buf_factor = ", buf_factor)
-        print("pos_factor = ", pos_factor)
-        """
-
-        w1 = 1
-        w2 = 1
-        w3 = 1
-
-        reward = w1 * math.exp(-link_delay) + w3 * buf_factor
-        return reward
-
-    def reward10(self, cur_pos, next_step):
-        link_delay = self.dynetwork._network[cur_pos][next_step]['edge_delay']
-        buf_factor = 1 - len(self.dynetwork._network.nodes[next_step]['receiving_queue']) / self.max_queue
-        curnode_last_geopos = self.mb.trajectory[cur_pos][-2]
-        curnode_now_geopos = self.mb.trajectory[cur_pos][-1]
-        nextstep_last_geopos = self.mb.trajectory[next_step][-2]
-        nextstep_now_geopos = self.mb.trajectory[next_step][-1]
-        curnode_angle = math.atan((curnode_now_geopos[1] - curnode_last_geopos[1]) / (curnode_now_geopos[0] - curnode_last_geopos[0]))
-        nextstep_angle = math.atan((nextstep_now_geopos[1] - nextstep_last_geopos[1]) / (nextstep_now_geopos[0] - nextstep_last_geopos[0]))
-        mobility_factor = (math.cos(nextstep_angle - curnode_angle) + 2) / 3    # range from 1/3 to 1
-        pos_factor = 1 - (math.sqrt(math.pow(nextstep_now_geopos[0] - curnode_now_geopos[0], 2) + math.pow(nextstep_now_geopos[1] - curnode_now_geopos[1], 2))) / self.radius
-
-        """
-        print("link_delay = ", link_delay, "delayfactor = ", math.exp(-link_delay))
-        print("angle1 = ", curnode_angle, "angle2 = ", nextstep_angle)
-        print("mobility_factor = ", mobility_factor)
-        print("buf_factor = ", buf_factor)
-        print("pos_factor = ", pos_factor)
-        """
-
-        w1 = 1
-        w2 = 1
-        w3 = 1
-
-        reward = w1 * math.exp(-link_delay)
-        return reward
-
     '''--------------------SHORTEST PATH-----------------'''
 
     def sp_router(self, router_type='dijkstra', weight='delay', savesteps=False):
@@ -612,11 +558,8 @@ class dynetworkEnv(gym.Env):
         print('Environment reset')
         
     '''helper function to calculate delivery times'''
-    def calc_avg_delivery(self, sp = False):
-        if sp:
-            delivery_times = self.dynetwork.sp_delivery_times
-        else:
-            delivery_times = self.dynetwork._delivery_times
+    def calc_avg_delivery(self):
+        delivery_times = self.dynetwork._delivery_times
         return(sum(delivery_times)/len(delivery_times))
 
     ''' Save an image of the current state of the network'''

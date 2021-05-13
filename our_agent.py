@@ -34,7 +34,6 @@ class QAgent(object):
         self.q = self.generate_q_table(dynetwork._network)
 
     ''' Use this function to initialize the q-table, the q-table is stable since the network is not mobile'''
-    # TODO: q-table must be generated that can be adjust to mobile network.
     def generate_q_table(self, network):
         print("Begin to generate_q_table")
         q_table = {}
