@@ -16,8 +16,6 @@ A mobile robot network is a kind of mobile ad-hoc network that connects mobile r
 
 ## Code Structure
 
-![代码类图](D:\Robot Network\图\代码类图.jpg)
-
 - our_agent: routing algorithm based on multi-agent reinforcement learning.
 - out_env: the simulation environment.
 - mobility: define mobility patterns of the robot nodes.
