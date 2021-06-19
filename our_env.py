@@ -1,6 +1,6 @@
 import dynetwork
 import packet
-import UpdateEdges as UE
+import update_edges as UE
 from our_agent import QAgent
 import mobility
 
