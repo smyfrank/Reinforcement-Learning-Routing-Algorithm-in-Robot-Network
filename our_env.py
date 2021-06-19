@@ -1,8 +1,8 @@
 import dynetwork
-import Packet
+import packet
 import UpdateEdges as UE
 from our_agent import QAgent
-import Mobility
+import mobility
 
 import gym
 from gym import error
@@ -43,7 +43,7 @@ class dynetworkEnv(gym.Env):
     
     '''Initialization of the network'''
     def __init__(self):
-        self.nnodes = 60    # The node queue will be full if there are too few nodes, when generate packet
+        self.nnodes = 20    # The node queue will be full if there are too few nodes, when generate packet
         self.radius = 0.2  # The antenna communication range, the whole map size is 1*1
         self.nedges = 3  # ABANDON Number of edges to attach from a new node to existing nodes
         self.minSpeed = 0.005
@@ -80,7 +80,7 @@ class dynetworkEnv(gym.Env):
         self.preds = None
 
         """Initiate mobility model here"""
-        self.mb = Mobility.Mobility(self.mobility_model, self.nnodes, self.minSpeed, self.maxSpeed)
+        self.mb = mobility.Mobility(self.mobility_model, self.nnodes, self.minSpeed, self.maxSpeed)
         init_pos = self.mb.get_next_way_point()  # get a dict of node position
         print("min speed is :", self.minSpeed, " max speed is :", self.maxSpeed)
 

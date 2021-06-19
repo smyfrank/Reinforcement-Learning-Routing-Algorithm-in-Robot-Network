@@ -1,7 +1,7 @@
 import time
 import random
 import numpy as np
-import Packet
+import packet
 import copy
 
 ''' 
@@ -68,7 +68,7 @@ class DynamicNetwork(object):
                 self._network.nodes[curPack.get_startPos()]['sp_sending_queue'].append(curPack.get_index())
             tempList[index] = curPack
         '''create Packets Object'''
-        packetsObj = Packet.Packets(tempList)
+        packetsObj = packet.Packets(tempList)
 
         '''Assign Packets Object to the network'''
         self._packets = copy.deepcopy(packetsObj)
@@ -117,7 +117,7 @@ class DynamicNetwork(object):
             """ assigns the packet different delivery destination than starting point """ 
             while (startNode == endNode):
                 endNode = random.randint(0, self.num_nodes-1)
-            curPack = Packet.Packet(startNode, endNode, startNode, index, 0)
+            curPack = packet.Packet(startNode, endNode, startNode, index, 0)
             if midSim:
                 """ appends newly generated packet to startNodes queue """ 
                 packets.packetList[index] = curPack
