@@ -5,3 +5,4 @@ plots/
 q-learning/
 *.npy
 rewardplots/
+Result/
